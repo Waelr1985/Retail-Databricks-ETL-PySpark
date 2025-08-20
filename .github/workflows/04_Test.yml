@@ -16,3 +16,5 @@ jobs:
       run: sudo apt-get install -y build-essential gcc
     - name: Install packages
       run: make install
+    - name: Run tests
+      run: make test
