@@ -8,7 +8,7 @@ format:
 	black \Codes/*.py 
 
 test:
-	python -m pytest \Codes/Test_*.py
+python -m pytest tests
 
 lint:
 	pylint \Codes/main.py
