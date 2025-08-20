@@ -11,6 +11,6 @@ test:
 	python -m pytest \Codes/Test_*.py
 
 lint:
-	pylint \Codes/main.py
+	flake8 Codes/
 
 all: install format lint test
