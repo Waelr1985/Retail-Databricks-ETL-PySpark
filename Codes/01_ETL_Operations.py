@@ -2,7 +2,42 @@
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, to_date
+from pyspark.sql.types import (
+    StructField,
+    StructType,
+    IntegerType,
+    StringType,
+    DoubleType,
+)
 import config
+
+# Explicit schema for the retail sales CSV. Using a static schema avoids the
+# overhead of schema inference and ensures consistent column types across runs.
+SALES_SCHEMA = StructType(
+    [
+        StructField("Row ID", IntegerType(), True),
+        StructField("Order ID", StringType(), True),
+        StructField("Order Date", StringType(), True),
+        StructField("Ship Date", StringType(), True),
+        StructField("Ship Mode", StringType(), True),
+        StructField("Customer ID", StringType(), True),
+        StructField("Customer Name", StringType(), True),
+        StructField("Segment", StringType(), True),
+        StructField("Country", StringType(), True),
+        StructField("City", StringType(), True),
+        StructField("State", StringType(), True),
+        StructField("Postal Code", IntegerType(), True),
+        StructField("Region", StringType(), True),
+        StructField("Product ID", StringType(), True),
+        StructField("Category", StringType(), True),
+        StructField("Sub-Category", StringType(), True),
+        StructField("Product Name", StringType(), True),
+        StructField("Sales", DoubleType(), True),
+        StructField("Quantity", IntegerType(), True),
+        StructField("Discount", DoubleType(), True),
+        StructField("Profit", DoubleType(), True),
+    ]
+)
 
 
 def run_etl(
@@ -11,14 +46,18 @@ def run_etl(
     silver_table: str,
     spark: SparkSession | None = None,
 ):
-    """Ingest a CSV file and create Bronze and Silver Delta tables."""
+    """Ingest a CSV file using ``SALES_SCHEMA`` and create Delta tables.
+
+    The explicit schema prevents Spark from inferring column types at run
+    time, which keeps ETL jobs deterministic and slightly faster.
+    """
     spark = spark or SparkSession.builder.appName("Retail_ETL").getOrCreate()
 
     # fmt: off
     raw = (
         spark.read
         .option("header", True)
-        .option("inferSchema", True)
+        .schema(SALES_SCHEMA)
         .csv(csv_path)
     )
     # fmt: on
