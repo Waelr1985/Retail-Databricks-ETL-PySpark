@@ -1,23 +1,47 @@
-# 03_Spark_SQL_For_DataTransformation (Retail → Gold)
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import sum as _sum
 import config
 
-spark = SparkSession.builder.appName("Retail_Gold_Build").getOrCreate()
 
-silver = spark.table(config.SILVER_PARTITIONED_TABLE)
+def run_gold(
+    silver_partitioned_table: str,
+    gold_table: str,
+    spark: SparkSession | None = None,
+):
+    """Aggregate Silver data into a Gold summary table."""
+    # fmt: off
+    spark = spark or SparkSession.builder.appName(
+        "Retail_Gold_Build"
+    ).getOrCreate()
+    # fmt: on
 
-gold = (silver.groupBy("Category","Region")
-              .agg(_sum("Sales").alias("total_sales"),
-                   _sum("Profit").alias("total_profit")))
+    silver = spark.table(silver_partitioned_table)
 
-gold.write.format("delta").mode("overwrite").saveAsTable(config.GOLD_TABLE)
+    gold = silver.groupBy("Category", "Region").agg(
+        _sum("Sales").alias("total_sales"),
+        _sum("Profit").alias("total_profit"),
+    )
 
-# sanity check (works in Databricks notebooks)
-try:
-    display(spark.table(config.GOLD_TABLE).orderBy("total_sales", ascending=False))
-except NameError:
-    # display() not available outside notebook
-    print(spark.table(config.GOLD_TABLE).orderBy("total_sales", ascending=False).limit(10).toPandas())
+    gold.write.format("delta").mode("overwrite").saveAsTable(gold_table)
 
-print(f"✅ Gold table created: {config.GOLD_TABLE}")
+    # sanity check (works in Databricks notebooks)
+    try:
+        # fmt: off
+        display(
+            spark.table(gold_table).orderBy("total_sales", ascending=False)
+        )
+        # fmt: on
+    except NameError:
+        # display() not available outside notebook
+        print(
+            spark.table(gold_table)
+            .orderBy("total_sales", ascending=False)
+            .limit(10)
+            .toPandas()
+        )
+
+    print(f"✅ Gold table created: {gold_table}")
+
+
+if __name__ == "__main__":
+    run_gold(config.SILVER_PARTITIONED_TABLE, config.GOLD_TABLE)
