@@ -8,8 +8,11 @@ on:
       - completed
   
 jobs:
-  ruff:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: make lint
+      - name: Install lint requirements
+        run: pip install -r requirements.txt
+      - name: Run lint
+        run: flake8 Codes
