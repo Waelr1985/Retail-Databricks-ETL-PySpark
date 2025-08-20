@@ -12,11 +12,12 @@ import os
 import matplotlib.pyplot as plt
 from pyspark.sql import SparkSession
 from pyspark.sql.utils import AnalysisException
+import config
 
 # Create SparkSession
 spark = SparkSession.builder.appName("Retail_Gold_Visualization").getOrCreate()
 
-OUT_DIR = "/dbfs/tmp"
+OUT_DIR = config.OUTPUT_DIR
 os.makedirs(OUT_DIR, exist_ok=True)
 
 def plot_sales_by_category(df):
@@ -47,7 +48,9 @@ def plot_profit_by_region(df):
 
 try:
     # Query from Gold Layer
-    sales_summary = spark.sql("SELECT Category, Region, total_sales, total_profit FROM gold.sales_summary")
+    sales_summary = spark.sql(
+        f"SELECT Category, Region, total_sales, total_profit FROM {config.GOLD_TABLE}"
+    )
 
     # Create two plots
     plot_sales_by_category(sales_summary.select("Category", "total_sales").distinct())

@@ -2,12 +2,13 @@
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, to_date
+import config
 
 # SparkSession is auto-created in Databricks, but you can include this for standalone PySpark
 spark = SparkSession.builder.appName("Retail_ETL").getOrCreate()
 
 # Bronze ingestion
-csv_path = "/FileStore/tables/superstore.csv"
+csv_path = config.CSV_PATH
 raw = (
     spark.read
     .option("header", True)
@@ -24,5 +25,5 @@ df = (
 )
 
 # Save Bronze & Silver tables
-raw.write.format("delta").mode("overwrite").saveAsTable("bronze.superstore")
-df.write.format("delta").mode("overwrite").saveAsTable("silver.superstore")
+raw.write.format("delta").mode("overwrite").saveAsTable(config.BRONZE_TABLE)
+df.write.format("delta").mode("overwrite").saveAsTable(config.SILVER_TABLE)
