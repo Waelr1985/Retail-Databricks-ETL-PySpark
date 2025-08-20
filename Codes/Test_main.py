@@ -1,8 +1,16 @@
 import os
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+CODES_DIR = ROOT_DIR / "Codes"
+
 
 def test_repo_layout():
-    assert os.path.exists("README.md")
-    assert os.path.exists("01_ETL_Operations.py")
-    assert os.path.exists("02_Delta_Lake_For_Storage.py")
-    assert os.path.exists("03_Spark_SQL_for_DataTransformations.py")
-    assert os.path.exists("04_Visualization_of_Transformed_Data.py")
+    assert (ROOT_DIR / "README.md").exists()
+    for fname in [
+        "01_ETL_Operations.py",
+        "02_Delta_Lake_For_Storage.py",
+        "03_Spark_SQL_for_DataTransformations.py",
+        "04_Visualization_of_Transformed_Data.py",
+    ]:
+        assert (CODES_DIR / fname).exists()
